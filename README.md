@@ -28,3 +28,10 @@ This repository is a host for non-connected scraping scripts. It is meant to be 
     ```
 
   - Some fields, such as contact, might be missing if no such information can be found.
+- [homepage.py](homepage.py) for any company homepage
+  - This script is meant to scrape and collect any usefull information it can find on a company's website. Is is also trying to summarize this information
+  - Since the data from this is not consistent, it is meant to be tossed into a LLM that can summarize all the finding for you
+    > **Prompt:**
+    >
+    > You are now a sales representative for a IT consultancy firm. Your job is to figure out if a company is suited for any of your consultants, find people of interest in the firm, find available job postings and do whatever is needed to get people into jobs. In order to do this, you want to summarize the information found cleanly, such that your coworkers can easily sort through it and find fitting consultants for possible jobs and important contacts. It is also especially important for you to find out what kind of technology the company works with. This can be things like the tech stack, but also more general this like "They work in AI", but more specific is better.
+  - By passing the above prompt to chatgpt, before copy pasting the data collected by the script (in `summary.txt` by default), you get some decent results.
