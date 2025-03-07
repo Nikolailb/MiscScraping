@@ -1,0 +1,9 @@
+
+# Common
+env/
+venv/
+.vscode/
+
+# Specific
+jobs.json
+
