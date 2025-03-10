@@ -2,7 +2,7 @@ import requests, re, concurrent.futures
 from typing import Any, Callable, Dict, Iterable, List, Set
 from bs4 import BeautifulSoup
 from collections import defaultdict
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from transformers import pipeline, BartTokenizer
 
 from crawler import WebCrawler
@@ -131,8 +131,9 @@ def get_company_information(url, verbose = False, max_workers = 5) -> List[str]:
     if response.status_code != 200:
         raise requests.HTTPError("Failed to fetch website")
     
+    domain = urlparse(url).netloc
     crawler = WebCrawler(max_workers=5, depth_limit=4)
-    links = categorize_links(crawler.start(url, filtr))
+    links = categorize_links(crawler.start(url, lambda a: filtr(a) and domain in a))
 
     checked_links = set() 
     text_collections = set()
@@ -155,4 +156,5 @@ test_url = "https://www.kongsberg.com/"
 with open("summary.txt", "w", encoding='utf-8') as file:
     information = get_company_information(test_url, verbose=True)
     print("Found information from: ", test_url)
-    file.write("\n".join(summarize_text(text) for text in information))
+    file.writelines(information)
+    # file.write("\n".join(summarize_text(text) for text in information))
