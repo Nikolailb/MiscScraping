@@ -4,6 +4,7 @@ from urllib.parse import urljoin, urlparse
 from urllib.robotparser import RobotFileParser
 from typing import Callable, Set
 from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 
 
 user_agents = [
@@ -68,6 +69,22 @@ class WebCrawler:
             return None
         return parser
     
+    def has_sitemap(self, parser: RobotFileParser):
+        return len(parser.site_maps()) > 0
+
+    def get_urls_from_sitemap(self, sitemap_url):
+        response = requests.get(sitemap_url)
+        if response.status_code != 200:
+            return
+        root = ET.fromstring(response.content)
+        namespaces = {"ns": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        urlset = root.findall(".//ns:url/ns:loc", namespaces)
+        if not urlset:
+            sitemaps = root.findall(".//ns:sitemap/ns:loc", namespaces)
+            if not sitemaps: return
+            return self.get_urls_from_sitemap(sitemaps[0].text)
+        return [url.text for url in urlset]
+
     def is_allowed(self, url: str) -> bool:
         """Check if the URL is allowed based on robots.txt rules."""
         parser = self.get_robots_parser(url)
@@ -115,6 +132,7 @@ class WebCrawler:
                 links.add(link)
 
         parser = self.get_robots_parser(base_url)
+        parser.site_maps()
         if parser and self.is_nice_bot:
             crawl_delay = parser.crawl_delay(self.user_agent)
             if crawl_delay:
@@ -128,7 +146,17 @@ class WebCrawler:
 
     def start(self, base_url: str, fltr=lambda a: True) -> Set[str]:
         """ Start the crawling process and return visited URLs. """
-        self.crawl(base_url, fltr)
+        parser = self.get_robots_parser(base_url)
+        if parser and self.has_sitemap(parser):
+            print("Found sitemap! Parsing urls...")
+            sitemap = parser.site_maps()[0]
+            urls = self.get_urls_from_sitemap(sitemap)
+            if urls:
+                self.visited_urls = [url for url in urls if fltr(url)]
+        
+        if not self.visited_urls:
+            print("No urls from sitemap, crawling...")
+            self.crawl(base_url, fltr)
         return self.visited_urls
     
 # a = WebCrawler(depth_limit=5)

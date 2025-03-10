@@ -126,14 +126,14 @@ def process_link(
     
     checked_links.add(full_link)
 
-def get_company_information(url, verbose = False, max_workers = 5) -> List[str]:
+def get_company_information(url, verbose = False, max_workers = 5, depth_limit = 4, category_limit = 5) -> List[str]:
     response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
     if response.status_code != 200:
         raise requests.HTTPError("Failed to fetch website")
     
     domain = urlparse(url).netloc
-    crawler = WebCrawler(max_workers=5, depth_limit=4)
-    links = categorize_links(crawler.start(url, lambda a: filtr(a) and domain in a))
+    crawler = WebCrawler(max_workers=max_workers, depth_limit=depth_limit)
+    links = categorize_links(crawler.start(url, lambda a: filtr(a) and domain in a), max_count=category_limit)
 
     checked_links = set() 
     text_collections = set()
@@ -152,7 +152,7 @@ def get_company_information(url, verbose = False, max_workers = 5) -> List[str]:
         concurrent.futures.wait(futures)
     return text_collections
 
-test_url = "https://www.kongsberg.com/"
+test_url = "https://www.equinor.com/"
 with open("summary.txt", "w", encoding='utf-8') as file:
     information = get_company_information(test_url, verbose=True)
     print("Found information from: ", test_url)
