@@ -13,8 +13,8 @@ IGNORED_ASSETS = [
     '.svg', '.css', '.js', '.mp4', '.mp3', '.avi', 
     '.mov', '.webm', '.pdf', '.woff', '.woff2', '.ttf'
 ]
-KEYWORDS_EN = ["about", "news", "team", "contact", "vacancie", "career", "event", "blog"]
-KEYWORDS_NO = ["om oss", "nyheter", "kontakt", "stillinger", "karriere"]
+KEYWORDS_EN = ["about", "news", "team", "contact", "vacancie", "career", "event", "blog", "jobs"]
+KEYWORDS_NO = ["om oss", "nyheter", "kontakt", "stillinger", "karriere", "jobb"]
 KEYWORDS = KEYWORDS_EN + KEYWORDS_NO
 def filtr(value: str):
     value = value.lower()
@@ -152,7 +152,7 @@ def get_company_information(url, verbose = False, max_workers = 5, depth_limit =
         concurrent.futures.wait(futures)
     return text_collections
 
-test_url = "https://www.equinor.com/"
+test_url = "https://accubits.com/"
 with open("summary.txt", "w", encoding='utf-8') as file:
     information = get_company_information(test_url, verbose=True)
     print("Found information from: ", test_url)

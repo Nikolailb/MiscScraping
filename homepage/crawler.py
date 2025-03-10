@@ -70,7 +70,8 @@ class WebCrawler:
         return parser
     
     def has_sitemap(self, parser: RobotFileParser):
-        return len(parser.site_maps()) > 0
+        site_maps = parser.site_maps()
+        return site_maps and len(site_maps) > 0
 
     def get_urls_from_sitemap(self, sitemap_url):
         response = requests.get(sitemap_url)
