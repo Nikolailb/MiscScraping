@@ -28,8 +28,10 @@ This repository is a host for non-connected scraping scripts. It is meant to be 
     ```
 
   - Some fields, such as contact, might be missing if no such information can be found.
-- [homepage.py](homepage.py) for any company homepage
+- [homepage.py](homepage/homepage.py) for any company homepage
   - This script is meant to scrape and collect any usefull information it can find on a company's website. Is is also trying to summarize this information
+  - It currently is in "nice-bot" mode by default, having the homemade crawler follow the rules defined in the websites robots.txt, though this can be disabled by setting the option to false in the crawler.
+  - There is also an option to try and summarize the data found, so that the amount of tokens used per prompt can be reduced.
   - Since the data from this is not consistent, it is meant to be tossed into a LLM that can summarize all the finding for you
     > **Prompt:**
     >

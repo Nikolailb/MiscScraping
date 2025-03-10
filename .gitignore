@@ -3,6 +3,7 @@
 env/
 venv/
 .vscode/
+__pycache__/
 
 # Specific
 jobs.json
