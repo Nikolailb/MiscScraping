@@ -11,14 +11,15 @@ IRRELEVANT_TAGS = ["script", "style", "footer", "header", "nav", "aside", "form"
 IGNORED_ASSETS = [
     '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', 
     '.svg', '.css', '.js', '.mp4', '.mp3', '.avi', 
-    '.mov', '.webm', '.pdf', '.woff', '.woff2', '.ttf'
+    '.mov', '.webm', '.pdf', '.woff', '.woff2', '.ttf',
+    '.xml'
 ]
 KEYWORDS_EN = ["about", "news", "team", "contact", "vacancie", "career", "event", "blog", "jobs"]
 KEYWORDS_NO = ["om oss", "nyheter", "kontakt", "stillinger", "karriere", "jobb"]
 KEYWORDS = KEYWORDS_EN + KEYWORDS_NO
 def filtr(value: str):
     value = value.lower()
-    return any(keyword in value for keyword in KEYWORDS)
+    return any(keyword in value for keyword in KEYWORDS) and not any(value.endswith(asset) for asset in IGNORED_ASSETS)
 
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
@@ -152,7 +153,7 @@ def get_company_information(url, verbose = False, max_workers = 5, depth_limit =
         concurrent.futures.wait(futures)
     return text_collections
 
-test_url = "https://accubits.com/"
+test_url = "https://www.akersolutions.com/"
 with open("summary.txt", "w", encoding='utf-8') as file:
     information = get_company_information(test_url, verbose=True)
     print("Found information from: ", test_url)
