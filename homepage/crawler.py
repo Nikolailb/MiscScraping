@@ -66,6 +66,7 @@ class WebCrawler:
             self.robots_parsers[domain] = parser  # Cache the parser
         except requests.exceptions.RequestException as e:
             print(f"Error fetching robots.txt for {base_url}: {e}")
+            self.robots_parsers[domain] = None
             return None
         return parser
     
@@ -133,7 +134,6 @@ class WebCrawler:
                 links.add(link)
 
         parser = self.get_robots_parser(base_url)
-        parser.site_maps()
         if parser and self.is_nice_bot:
             crawl_delay = parser.crawl_delay(self.user_agent)
             if crawl_delay:

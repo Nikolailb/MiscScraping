@@ -3,9 +3,9 @@ from typing import Any, Callable, Dict, Iterable, List, Set
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from urllib.parse import urljoin, urlparse
-from transformers import pipeline, BartTokenizer
 
 from crawler import WebCrawler
+from textutils import remove_repeated_text
 
 IRRELEVANT_TAGS = ["script", "style", "footer", "header", "nav", "aside", "form", "button", "svg"]
 IGNORED_ASSETS = [
@@ -21,17 +21,7 @@ def filtr(value: str):
     value = value.lower()
     return any(keyword in value for keyword in KEYWORDS) and not any(value.endswith(asset) for asset in IGNORED_ASSETS)
 
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
 
-def summarize_text(text):    
-    if not text: return ""
-    inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=1024)
-    if len(inputs['input_ids'][0]) < 512:
-        return text
-    text = tokenizer.decode(inputs['input_ids'][0], skip_special_tokens=True)
-    summary = summarizer(text, max_length=256, min_length=50, do_sample=False)
-    return summary[0]['summary_text']
 
 def extract_text_from_html(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
@@ -45,6 +35,7 @@ def extract_text_from_html(html_content):
     
     text = soup.get_text(strip=True, separator=" ")
     text = re.sub(r'\n+', '\n', text).strip()
+    text = re.sub(r'\s', ' ', text).strip()
     
     return text
 
@@ -153,9 +144,10 @@ def get_company_information(url, verbose = False, max_workers = 5, depth_limit =
         concurrent.futures.wait(futures)
     return text_collections
 
-test_url = "https://www.akersolutions.com/"
+test_url = input("URL: ")
 with open("summary.txt", "w", encoding='utf-8') as file:
-    information = get_company_information(test_url, verbose=True)
+    information = get_company_information(test_url, verbose=True, depth_limit=8, category_limit=10)
     print("Found information from: ", test_url)
-    file.writelines(information)
+    
+    file.write(remove_repeated_text("\n".join(information)))
     # file.write("\n".join(summarize_text(text) for text in information))
