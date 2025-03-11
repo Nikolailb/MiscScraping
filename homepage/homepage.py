@@ -5,7 +5,7 @@ from collections import defaultdict
 from urllib.parse import urljoin, urlparse
 
 from crawler import WebCrawler
-from textutils import remove_repeated_text
+from textutils import clean_text, remove_repeated_text
 
 IRRELEVANT_TAGS = ["script", "style", "footer", "header", "nav", "aside", "form", "button", "svg"]
 IGNORED_ASSETS = [
@@ -14,14 +14,14 @@ IGNORED_ASSETS = [
     '.mov', '.webm', '.pdf', '.woff', '.woff2', '.ttf',
     '.xml'
 ]
+
 KEYWORDS_EN = ["about", "news", "team", "contact", "vacancie", "career", "event", "blog", "jobs"]
 KEYWORDS_NO = ["om oss", "nyheter", "kontakt", "stillinger", "karriere", "jobb"]
 KEYWORDS = KEYWORDS_EN + KEYWORDS_NO
+
 def filtr(value: str):
     value = value.lower()
     return any(keyword in value for keyword in KEYWORDS) and not any(value.endswith(asset) for asset in IGNORED_ASSETS)
-
-
 
 def extract_text_from_html(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
@@ -34,17 +34,15 @@ def extract_text_from_html(html_content):
             repeated_content.decompose()
     
     text = soup.get_text(strip=True, separator=" ")
-    text = re.sub(r'\n+', '\n', text).strip()
-    text = re.sub(r'\s', ' ', text).strip()
     
-    return text
+    return clean_text(text)
 
-def get_html_content(url):
+def get_html_content(url: str):
     response = requests.get(url)
     if response.status_code != 200: return None
     return response.content
 
-def find_relevant_links(soup, keywords=KEYWORDS):
+def find_relevant_links(soup: BeautifulSoup, keywords=KEYWORDS):
     """Simplified crawler, just looks at the homepage to find relevant links"""
     links = defaultdict(set)
     for link in soup.find_all("a", href=True):
